@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>サプリ管理</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1e293b">
+
+<!-- iOS Safari PWA対応 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="サプリ管理">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root {
+  --bg:       #0f172a;
+  --surface:  #1e293b;
+  --surface2: #273449;
+  --border:   #334155;
+  --morning:  #f59e0b;
+  --night:    #818cf8;
+  --text:     #f1f5f9;
+  --muted:    #94a3b8;
+  --danger:   #f87171;
+  --green:    #34d399;
+  --radius:   14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;padding-bottom:72px;
+}
+
+/* ── ヘッダー ── */
+header{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:16px 20px 13px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:10;
+}
+.header-title{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:7px;}
+#date-display{font-size:.76rem;color:var(--muted);text-align:right;line-height:1.6;}
+
+/* ── ボトムナビ ── */
+#bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--surface);border-top:1px solid var(--border);
+  display:flex;z-index:20;
+}
+.nav-btn{
+  flex:1;padding:10px 0 8px;border:none;background:transparent;
+  color:var(--muted);cursor:pointer;font-size:.7rem;font-weight:600;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:color .2s;
+}
+.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.nav-btn.active{color:#818cf8;}
+.nav-btn.active .nav-icon-bg{
+  background:#6366f122;border-radius:8px;padding:2px 14px;
+}
+
+/* ── ページ ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── 進捗バー ── */
+#progress-wrap{padding:14px 20px 8px;}
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
+.prog-label{font-size:.74rem;width:32px;color:var(--muted);}
+.prog-bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;}
+.prog-bar-fill{height:100%;border-radius:99px;transition:width .45s ease;width:0%;}
+.prog-bar-fill.morning{background:var(--morning);}
+.prog-bar-fill.night{background:var(--night);}
+.prog-count{font-size:.74rem;color:var(--muted);width:34px;text-align:right;}
+
+/* 全完了バナー */
+#all-done-banner{
+  margin:0 20px 10px;padding:10px 16px;
+  background:#064e3b;border:1px solid var(--green);border-radius:var(--radius);
+  color:var(--green);font-size:.85rem;font-weight:600;
+  display:none;align-items:center;gap:8px;
+}
+#all-done-banner.show{display:flex;}
+
+/* ── タイムタブ ── */
+#time-tabs{
+  display:flex;margin:0 20px 4px;
+  background:var(--surface2);border-radius:var(--radius);
+  padding:4px;gap:4px;
+}
+.time-tab{
+  flex:1;padding:8px 0;border:none;border-radius:10px;
+  font-size:.88rem;font-weight:600;cursor:pointer;
+  background:transparent;color:var(--muted);transition:all .2s;
+}
+.time-tab.active.morning{background:var(--morning);color:#1c1003;}
+.time-tab.active.night  {background:var(--night);  color:#1a1040;}
+
+/* ── チェックリスト ── */
+#check-list-wrap{padding:12px 20px 0;}
+.check-section{display:none;}
+.check-section.active{display:block;}
+
+.check-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:9px;
+  display:flex;align-items:center;gap:13px;
+  cursor:pointer;user-select:none;-webkit-user-select:none;
+  transition:background .2s, border-color .2s;
+}
+.check-item.done.m-item{background:#2a2005;border-color:#92400e;}
+.check-item.done.n-item{background:#1b1a3a;border-color:#4338ca;}
+
+.circle{
+  width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.m-item .circle{border:2px solid var(--morning);}
+.n-item .circle{border:2px solid var(--night);}
+.check-item.done.m-item .circle{background:var(--morning);border-color:var(--morning);}
+.check-item.done.n-item .circle{background:var(--night);  border-color:var(--night);}
+.circle svg{display:none;}
+.check-item.done .circle svg{display:block;}
+
+.check-info{flex:1;min-width:0;}
+.check-name{
+  font-size:.95rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.check-item.done .check-name{color:var(--muted);text-decoration:line-through;}
+.check-note{
+  font-size:.74rem;color:var(--muted);margin-top:2px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+.empty-check{
+  text-align:center;padding:52px 0 20px;color:var(--muted);
+  font-size:.88rem;line-height:2.2;
+}
+.empty-check .eicon{font-size:2.4rem;display:block;margin-bottom:4px;}
+
+/* リセットリンク */
+#reset-link{
+  display:block;text-align:center;margin:18px auto 0;
+  font-size:.76rem;color:var(--muted);cursor:pointer;
+  background:none;border:none;text-decoration:underline;
+  text-underline-offset:3px;padding:4px 0;
+}
+#reset-link:hover{color:var(--danger);}
+
+/* ════════════════════════════════
+   管理ページ
+════════════════════════════════ */
+#manage-header{
+  padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between;
+}
+#manage-header h2{font-size:.95rem;font-weight:700;color:var(--muted);}
+#manage-header span{font-size:.8rem;color:var(--muted);}
+
+.manage-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);margin:0 20px 9px;
+  display:flex;align-items:center;gap:0;overflow:hidden;
+}
+/* 並び替えハンドル */
+.sort-handle{
+  padding:0 10px 0 14px;color:var(--border);cursor:grab;flex-shrink:0;
+  touch-action:none;display:flex;align-items:center;
+}
+.sort-handle:active{cursor:grabbing;}
+.sort-handle svg{width:16px;height:16px;fill:currentColor;}
+
+.manage-info{flex:1;min-width:0;padding:13px 0;}
+.manage-name{
+  font-size:.93rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.manage-sub{font-size:.73rem;color:var(--muted);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.badge{
+  font-size:.64rem;padding:2px 7px;border-radius:99px;font-weight:700;
+}
+.badge.m{background:#78350f33;color:var(--morning);border:1px solid #78350f66;}
+.badge.n{background:#3730a333;color:var(--night);  border:1px solid #3730a366;}
+
+.manage-actions{display:flex;flex-shrink:0;}
+.act-btn{
+  background:none;border:none;cursor:pointer;padding:14px 10px;
+  color:var(--muted);transition:color .15s;
+}
+.act-btn:hover{color:var(--text);}
+.act-btn.del:hover{color:var(--danger);}
+.act-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;}
+
+.empty-manage{
+  text-align:center;padding:56px 0 20px;color:var(--muted);
+  font-size:.88rem;line-height:2.2;
+}
+.empty-manage .eicon{font-size:2.4rem;display:block;margin-bottom:4px;}
+
+/* FAB */
+#fab{
+  position:fixed;bottom:80px;right:20px;width:52px;height:52px;
+  border-radius:50%;background:linear-gradient(135deg,#6366f1,#818cf8);
+  color:#fff;border:none;font-size:1.5rem;cursor:pointer;
+  display:none;align-items:center;justify-content:center;
+  box-shadow:0 4px 18px #6366f155;transition:transform .15s,box-shadow .15s;
+}
+#fab.show{display:flex;}
+#fab:hover{transform:scale(1.07);box-shadow:0 6px 26px #6366f177;}
+#fab:active{transform:scale(.94);}
+
+/* ════════════════════════════════
+   モーダル（追加・編集共用）
+════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;background:#00000088;
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;
+}
+.overlay.show{opacity:1;pointer-events:all;}
+.modal{
+  background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;
+  padding:22px 20px 30px;width:100%;max-width:480px;
+  transform:translateY(40px);transition:transform .25s cubic-bezier(.22,.68,0,1.1);
+}
+.overlay.show .modal{transform:translateY(0);}
+.modal-title{font-size:1rem;font-weight:700;margin-bottom:18px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;}
+.field input{
+  width:100%;background:var(--surface2);border:1px solid var(--border);
+  border-radius:10px;padding:10px 14px;font-size:.93rem;color:var(--text);
+  outline:none;transition:border-color .2s;
+}
+.field input:focus{border-color:#6366f1;}
+.timing-row{display:flex;gap:9px;}
+.timing-btn{
+  flex:1;padding:9px 0;border-radius:10px;
+  border:2px solid var(--border);background:var(--surface2);
+  color:var(--muted);font-size:.88rem;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.timing-btn.on-m{background:#78350f44;border-color:var(--morning);color:var(--morning);}
+.timing-btn.on-n{background:#3730a344;border-color:var(--night);  color:var(--night);}
+.modal-btns{display:flex;gap:9px;margin-top:18px;}
+.btn-cancel{
+  flex:1;padding:11px 0;border-radius:10px;
+  border:1px solid var(--border);background:transparent;
+  color:var(--muted);font-size:.93rem;cursor:pointer;
+}
+.btn-save{
+  flex:2;padding:11px 0;border-radius:10px;border:none;
+  background:linear-gradient(135deg,#6366f1,#818cf8);
+  color:#fff;font-size:.93rem;font-weight:700;cursor:pointer;transition:opacity .2s;
+}
+.btn-save:disabled{opacity:.35;cursor:default;}
+
+/* ドラッグ中 */
+.dragging{opacity:.5;background:var(--surface2)!important;}
+.drag-over{border:2px dashed #6366f1!important;}
+
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(.92)}100%{transform:scale(1)}}
+.check-item:active{animation:pop .14s ease;}
+</style>
+</head>
+<body>
+
+<!-- ヘッダー -->
+<header>
+  <div class="header-title">💊 サプリ管理</div>
+  <div id="date-display"></div>
+</header>
+
+<!-- ════ 今日ページ ════ -->
+<div class="page active" id="page-today">
+
+  <!-- 進捗バー -->
+  <div id="progress-wrap">
+    <div class="prog-row">
+      <span class="prog-label">朝</span>
+      <div class="prog-bar-bg"><div class="prog-bar-fill morning" id="prog-m"></div></div>
+      <span class="prog-count" id="prog-m-txt">-</span>
+    </div>
+    <div class="prog-row">
+      <span class="prog-label">夜</span>
+      <div class="prog-bar-bg"><div class="prog-bar-fill night" id="prog-n"></div></div>
+      <span class="prog-count" id="prog-n-txt">-</span>
+    </div>
+  </div>
+
+  <!-- 全完了バナー -->
+  <div id="all-done-banner">
+    <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;stroke:#34d399;stroke-width:2;flex-shrink:0">
+      <path d="M4 10l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    本日分のサプリをすべて服用しました！
+  </div>
+
+  <!-- 朝/夜タブ -->
+  <div id="time-tabs">
+    <button class="time-tab active morning" data-sec="morning">☀️ 朝</button>
+    <button class="time-tab night"          data-sec="night">🌙 夜</button>
+  </div>
+
+  <!-- チェックリスト -->
+  <div id="check-list-wrap">
+    <div class="check-section active" id="sec-morning"></div>
+    <div class="check-section"        id="sec-night"></div>
+  </div>
+
+  <button id="reset-link">今日のチェックをリセット</button>
+</div>
+
+<!-- ════ 管理ページ ════ -->
+<div class="page" id="page-manage">
+  <div id="manage-header">
+    <h2>サプリ一覧</h2>
+    <span id="manage-count"></span>
+  </div>
+  <div id="manage-list"></div>
+</div>
+
+<!-- ボトムナビ -->
+<nav id="bottom-nav">
+  <button class="nav-btn active" id="nav-today">
+    <div class="nav-icon-bg">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    </div>
+    今日
+  </button>
+  <button class="nav-btn" id="nav-manage">
+    <div class="nav-icon-bg">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+    </div>
+    管理
+  </button>
+</nav>
+
+<!-- FAB（管理ページ用） -->
+<button id="fab" title="サプリを追加">＋</button>
+
+<!-- モーダル -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">サプリを追加</div>
+    <div class="field">
+      <label>サプリ名 *</label>
+      <input type="text" id="inp-name" placeholder="例：ビタミンC、鉄分…" maxlength="30">
+    </div>
+    <div class="field">
+      <label>メモ（容量・個数など）</label>
+      <input type="text" id="inp-note" placeholder="例：500mg × 2錠" maxlength="40">
+    </div>
+    <div class="field">
+      <label>服用タイミング *（複数選択可）</label>
+      <div class="timing-row">
+        <button class="timing-btn" id="tbtn-m" type="button">☀️ 朝</button>
+        <button class="timing-btn" id="tbtn-n" type="button">🌙 夜</button>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" id="btn-cancel">キャンセル</button>
+      <button class="btn-save"   id="btn-save" disabled>保存する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  データ
+// ══════════════════════════════════════════════
+// supplements: [{id, name, note, timing:['morning'|'night']}]
+// checks: { "YYYY-MM-DD": { "<id>-morning": bool, ... } }
+
+const TODAY = () => new Date().toLocaleDateString('sv-SE');
+
+let supplements = [];
+let checks = {};
+
+const load = () => {
+  supplements = JSON.parse(localStorage.getItem('suppl_list')   || '[]');
+  checks      = JSON.parse(localStorage.getItem('suppl_checks') || '{}');
+};
+const saveList   = () => localStorage.setItem('suppl_list',   JSON.stringify(supplements));
+const saveChecks = () => localStorage.setItem('suppl_checks', JSON.stringify(checks));
+
+const getCheck = (id, t) => !!(checks[TODAY()] || {})[`${id}-${t}`];
+const setCheck = (id, t, v) => {
+  if (!checks[TODAY()]) checks[TODAY()] = {};
+  checks[TODAY()][`${id}-${t}`] = v;
+  saveChecks();
+};
+
+const esc = s => s.replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ══════════════════════════════════════════════
+//  日付表示
+// ══════════════════════════════════════════════
+const updateDate = () => {
+  const d = new Date();
+  const wd = '日月火水木金土'[d.getDay()];
+  document.getElementById('date-display').innerHTML =
+    `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} (${wd})<br>` +
+    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+};
+
+// ══════════════════════════════════════════════
+//  今日ページ描画
+// ══════════════════════════════════════════════
+function renderToday() {
+  ['morning','night'].forEach(t => {
+    const el    = document.getElementById(`sec-${t}`);
+    const items = supplements.filter(s => s.timing.includes(t));
+    if (!items.length) {
+      const label = t === 'morning' ? '朝' : '夜';
+      const icon  = t === 'morning' ? '☀️' : '🌙';
+      el.innerHTML = `<div class="empty-check"><span class="eicon">${icon}</span>${label}のサプリが登録されていません。<br>「管理」タブからサプリを追加してください。</div>`;
+      return;
+    }
+    el.innerHTML = items.map(s => {
+      const done = getCheck(s.id, t);
+      const cls  = t === 'morning' ? 'm-item' : 'n-item';
+      const stroke = t === 'morning' ? '#1c1003' : '#1a1040';
+      return `
+        <div class="check-item ${cls}${done?' done':''}" data-id="${s.id}" data-t="${t}">
+          <div class="circle">
+            <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+              <path d="M1 5L5 9L12 1" stroke="${stroke}" stroke-width="2.2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="check-info">
+            <div class="check-name">${esc(s.name)}</div>
+            ${s.note ? `<div class="check-note">${esc(s.note)}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  let totalAll = 0, totalDone = 0;
+  ['morning','night'].forEach(t => {
+    const all  = supplements.filter(s => s.timing.includes(t));
+    const done = all.filter(s => getCheck(s.id, t)).length;
+    const pct  = all.length ? done / all.length * 100 : 0;
+    document.getElementById(`prog-${t==='morning'?'m':'n'}`).style.width = pct + '%';
+    document.getElementById(`prog-${t==='morning'?'m':'n'}-txt`).textContent = `${done}/${all.length}`;
+    totalAll  += all.length;
+    totalDone += done;
+  });
+  const banner = document.getElementById('all-done-banner');
+  banner.classList.toggle('show', totalAll > 0 && totalDone === totalAll);
+}
+
+// チェック操作
+document.getElementById('check-list-wrap').addEventListener('click', e => {
+  const item = e.target.closest('.check-item');
+  if (!item) return;
+  const { id, t } = item.dataset;
+  setCheck(id, t, !getCheck(id, t));
+  renderToday();
+});
+
+// タブ切り替え
+document.getElementById('time-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.time-tab');
+  if (!btn) return;
+  document.querySelectorAll('.time-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.check-section').forEach(s => s.classList.remove('active'));
+  document.getElementById(`sec-${btn.dataset.sec}`).classList.add('active');
+});
+
+// リセット
+document.getElementById('reset-link').onclick = () => {
+  if (!confirm('今日のチェックをすべてリセットしますか？')) return;
+  delete checks[TODAY()];
+  saveChecks();
+  renderToday();
+};
+
+// ══════════════════════════════════════════════
+//  管理ページ描画
+// ══════════════════════════════════════════════
+function renderManage() {
+  const list = document.getElementById('manage-list');
+  document.getElementById('manage-count').textContent =
+    supplements.length ? `${supplements.length} 件登録中` : '';
+
+  if (!supplements.length) {
+    list.innerHTML = `<div class="empty-manage"><span class="eicon">📋</span>サプリが登録されていません。<br>＋ ボタンから追加してください。</div>`;
+    return;
+  }
+
+  list.innerHTML = supplements.map((s, i) => {
+    const badges = s.timing.map(t =>
+      `<span class="badge ${t==='morning'?'m':'n'}">${t==='morning'?'☀️朝':'🌙夜'}</span>`
+    ).join('');
+    return `
+      <div class="manage-item" data-id="${s.id}" draggable="true">
+        <div class="sort-handle" title="ドラッグで並び替え">
+          <svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="1.5" rx=".75"/>
+          <rect x="2" y="7.25" width="12" height="1.5" rx=".75"/>
+          <rect x="2" y="10.5" width="12" height="1.5" rx=".75"/></svg>
+        </div>
+        <div class="manage-info">
+          <div class="manage-name">${esc(s.name)}</div>
+          <div class="manage-sub">
+            ${badges}
+            ${s.note ? `<span>${esc(s.note)}</span>` : ''}
+          </div>
+        </div>
+        <div class="manage-actions">
+          <button class="act-btn edit" data-id="${s.id}" title="編集">
+            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="act-btn del" data-id="${s.id}" title="削除">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+            <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          </button>
+        </div>
+      </div>`;
+  }).join('');
+
+  initDragSort();
+}
+
+// ── 管理リスト：編集・削除 ──
+document.getElementById('manage-list').addEventListener('click', e => {
+  const editBtn = e.target.closest('.act-btn.edit');
+  const delBtn  = e.target.closest('.act-btn.del');
+  if (editBtn) openModal(editBtn.dataset.id);
+  if (delBtn) {
+    const s = supplements.find(x => x.id === delBtn.dataset.id);
+    if (!s) return;
+    if (!confirm(`「${s.name}」を削除しますか？`)) return;
+    supplements = supplements.filter(x => x.id !== delBtn.dataset.id);
+    saveList();
+    renderManage();
+    renderToday();
+  }
+});
+
+// ══════════════════════════════════════════════
+//  モーダル（追加・編集共用）
+// ══════════════════════════════════════════════
+const overlay  = document.getElementById('overlay');
+const inpName  = document.getElementById('inp-name');
+const inpNote  = document.getElementById('inp-note');
+const tbtnM    = document.getElementById('tbtn-m');
+const tbtnN    = document.getElementById('tbtn-n');
+const btnSave  = document.getElementById('btn-save');
+
+let editId = null;
+let selM = false, selN = false;
+
+const closeModal = () => { overlay.classList.remove('show'); editId = null; };
+
+const validateModal = () => {
+  btnSave.disabled = !(inpName.value.trim() && (selM || selN));
+};
+
+function openModal(id = null) {
+  editId = id;
+  document.getElementById('modal-title').textContent = id ? 'サプリを編集' : 'サプリを追加';
+  if (id) {
+    const s = supplements.find(x => x.id === id);
+    inpName.value = s.name;
+    inpNote.value = s.note || '';
+    selM = s.timing.includes('morning');
+    selN = s.timing.includes('night');
+  } else {
+    inpName.value = ''; inpNote.value = '';
+    selM = false; selN = false;
+  }
+  tbtnM.classList.toggle('on-m', selM);
+  tbtnN.classList.toggle('on-n', selN);
+  validateModal();
+  overlay.classList.add('show');
+  setTimeout(() => inpName.focus(), 200);
+}
+
+tbtnM.onclick = () => { selM = !selM; tbtnM.classList.toggle('on-m', selM); validateModal(); };
+tbtnN.onclick = () => { selN = !selN; tbtnN.classList.toggle('on-n', selN); validateModal(); };
+inpName.addEventListener('input', validateModal);
+document.getElementById('btn-cancel').onclick = closeModal;
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+
+btnSave.onclick = () => {
+  const name   = inpName.value.trim();
+  const note   = inpNote.value.trim();
+  const timing = [...(selM?['morning']:[]), ...(selN?['night']:[])];
+  if (!name || !timing.length) return;
+
+  if (editId) {
+    const s = supplements.find(x => x.id === editId);
+    s.name = name; s.note = note; s.timing = timing;
+  } else {
+    supplements.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), name, note, timing });
+  }
+  saveList();
+  renderManage();
+  renderToday();
+  closeModal();
+};
+
+inpName.addEventListener('keydown', e => { if (e.key === 'Enter') inpNote.focus(); });
+inpNote.addEventListener('keydown', e => { if (e.key === 'Enter' && !btnSave.disabled) btnSave.click(); });
+
+// ══════════════════════════════════════════════
+//  ドラッグ＆ドロップ並び替え
+// ══════════════════════════════════════════════
+let dragSrc = null;
+
+function initDragSort() {
+  document.querySelectorAll('.manage-item').forEach(item => {
+    item.addEventListener('dragstart', e => {
+      dragSrc = item;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      document.querySelectorAll('.manage-item').forEach(i => i.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (item !== dragSrc) {
+        document.querySelectorAll('.manage-item').forEach(i => i.classList.remove('drag-over'));
+        item.classList.add('drag-over');
+      }
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!dragSrc || dragSrc === item) return;
+      const srcId = dragSrc.dataset.id;
+      const dstId = item.dataset.id;
+      const si = supplements.findIndex(x => x.id === srcId);
+      const di = supplements.findIndex(x => x.id === dstId);
+      const [moved] = supplements.splice(si, 1);
+      supplements.splice(di, 0, moved);
+      saveList();
+      renderManage();
+    });
+  });
+}
+
+// ══════════════════════════════════════════════
+//  ボトムナビ
+// ══════════════════════════════════════════════
+document.getElementById('nav-today').onclick = () => switchPage('today');
+document.getElementById('nav-manage').onclick = () => switchPage('manage');
+
+function switchPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  document.getElementById(`nav-${name}`).classList.add('active');
+  const fab = document.getElementById('fab');
+  fab.classList.toggle('show', name === 'manage');
+  if (name === 'manage') renderManage();
+}
+
+document.getElementById('fab').onclick = () => openModal();
+
+// ══════════════════════════════════════════════
+//  初期化
+// ══════════════════════════════════════════════
+load();
+renderToday();
+updateDate();
+setInterval(updateDate, 30000);
+
+// 日付変わり自動リフレッシュ
+let lastDate = TODAY();
+setInterval(() => {
+  if (TODAY() !== lastDate) { lastDate = TODAY(); renderToday(); }
+}, 60000);
+
+// Service Worker 登録
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .catch(err => console.warn('SW registration failed:', err));
+  });
+}
+</script>
+</body>
+</html>
