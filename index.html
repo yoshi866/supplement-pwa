@@ -1,698 +1,702 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>サプリ管理</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="サプリ記録">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>サプリ記録</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1e293b">
+    :root {
+      --bg: #f9f9f7;
+      --surface: #ffffff;
+      --border: #e8e6e0;
+      --text-primary: #1a1a18;
+      --text-secondary: #6b6b67;
+      --text-tertiary: #a5a5a0;
+      --green: #2d8a5e;
+      --green-bg: #edf7f2;
+      --green-border: #b8dfc9;
+      --amber: #b87a1a;
+      --amber-bg: #fdf4e3;
+      --amber-border: #f0d090;
+      --red: #c0392b;
+      --red-bg: #fdf0ee;
+      --red-border: #f0b8b0;
+      --radius: 14px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
 
-<!-- iOS Safari PWA対応 -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="サプリ管理">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<style>
-:root {
-  --bg:       #0f172a;
-  --surface:  #1e293b;
-  --surface2: #273449;
-  --border:   #334155;
-  --morning:  #f59e0b;
-  --night:    #818cf8;
-  --text:     #f1f5f9;
-  --muted:    #94a3b8;
-  --danger:   #f87171;
-  --green:    #34d399;
-  --radius:   14px;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:"Hiragino Sans","Yu Gothic UI",sans-serif;
-  background:var(--bg);color:var(--text);
-  min-height:100vh;padding-bottom:72px;
-}
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141412;
+        --surface: #1e1e1c;
+        --border: #2e2e2a;
+        --text-primary: #f0efe8;
+        --text-secondary: #9a9a94;
+        --text-tertiary: #5a5a56;
+        --green: #4db87e;
+        --green-bg: #162b20;
+        --green-border: #2a5040;
+        --amber: #d4a030;
+        --amber-bg: #2a2010;
+        --amber-border: #5a4010;
+        --red: #e05545;
+        --red-bg: #2a1412;
+        --red-border: #5a2820;
+      }
+    }
 
-/* ── ヘッダー ── */
-header{
-  background:var(--surface);border-bottom:1px solid var(--border);
-  padding:16px 20px 13px;display:flex;align-items:center;
-  justify-content:space-between;position:sticky;top:0;z-index:10;
-}
-.header-title{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:7px;}
-#date-display{font-size:.76rem;color:var(--muted);text-align:right;line-height:1.6;}
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text-primary);
+      font-family: -apple-system, 'Hiragino Sans', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
 
-/* ── ボトムナビ ── */
-#bottom-nav{
-  position:fixed;bottom:0;left:0;right:0;
-  background:var(--surface);border-top:1px solid var(--border);
-  display:flex;z-index:20;
-}
-.nav-btn{
-  flex:1;padding:10px 0 8px;border:none;background:transparent;
-  color:var(--muted);cursor:pointer;font-size:.7rem;font-weight:600;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  transition:color .2s;
-}
-.nav-btn svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
-.nav-btn.active{color:#818cf8;}
-.nav-btn.active .nav-icon-bg{
-  background:#6366f122;border-radius:8px;padding:2px 14px;
-}
+    .app {
+      max-width: 480px;
+      margin: 0 auto;
+      padding: calc(var(--safe-top) + 1.5rem) 1.25rem calc(var(--safe-bottom) + 2rem);
+      min-height: 100vh;
+    }
 
-/* ── ページ ── */
-.page{display:none;}
-.page.active{display:block;}
+    .tab-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.5rem;
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+    }
 
-/* ── 進捗バー ── */
-#progress-wrap{padding:14px 20px 8px;}
-.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:7px;}
-.prog-label{font-size:.74rem;width:32px;color:var(--muted);}
-.prog-bar-bg{flex:1;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;}
-.prog-bar-fill{height:100%;border-radius:99px;transition:width .45s ease;width:0%;}
-.prog-bar-fill.morning{background:var(--morning);}
-.prog-bar-fill.night{background:var(--night);}
-.prog-count{font-size:.74rem;color:var(--muted);width:34px;text-align:right;}
+    .tab-btn {
+      flex: 1;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
 
-/* 全完了バナー */
-#all-done-banner{
-  margin:0 20px 10px;padding:10px 16px;
-  background:#064e3b;border:1px solid var(--green);border-radius:var(--radius);
-  color:var(--green);font-size:.85rem;font-weight:600;
-  display:none;align-items:center;gap:8px;
-}
-#all-done-banner.show{display:flex;}
+    .tab-btn.active {
+      background: var(--bg);
+      color: var(--text-primary);
+      border: 0.5px solid var(--border);
+    }
 
-/* ── タイムタブ ── */
-#time-tabs{
-  display:flex;margin:0 20px 4px;
-  background:var(--surface2);border-radius:var(--radius);
-  padding:4px;gap:4px;
-}
-.time-tab{
-  flex:1;padding:8px 0;border:none;border-radius:10px;
-  font-size:.88rem;font-weight:600;cursor:pointer;
-  background:transparent;color:var(--muted);transition:all .2s;
-}
-.time-tab.active.morning{background:var(--morning);color:#1c1003;}
-.time-tab.active.night  {background:var(--night);  color:#1a1040;}
+    .page { display: none; }
+    .page.active { display: block; }
 
-/* ── チェックリスト ── */
-#check-list-wrap{padding:12px 20px 0;}
-.check-section{display:none;}
-.check-section.active{display:block;}
+    .header { margin-bottom: 1.75rem; }
 
-.check-item{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:14px 16px;margin-bottom:9px;
-  display:flex;align-items:center;gap:13px;
-  cursor:pointer;user-select:none;-webkit-user-select:none;
-  transition:background .2s, border-color .2s;
-}
-.check-item.done.m-item{background:#2a2005;border-color:#92400e;}
-.check-item.done.n-item{background:#1b1a3a;border-color:#4338ca;}
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
 
-.circle{
-  width:28px;height:28px;border-radius:50%;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;
-}
-.m-item .circle{border:2px solid var(--morning);}
-.n-item .circle{border:2px solid var(--night);}
-.check-item.done.m-item .circle{background:var(--morning);border-color:var(--morning);}
-.check-item.done.n-item .circle{background:var(--night);  border-color:var(--night);}
-.circle svg{display:none;}
-.check-item.done .circle svg{display:block;}
+    .app-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text-primary);
+    }
 
-.check-info{flex:1;min-width:0;}
-.check-name{
-  font-size:.95rem;font-weight:600;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.check-item.done .check-name{color:var(--muted);text-decoration:line-through;}
-.check-note{
-  font-size:.74rem;color:var(--muted);margin-top:2px;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+    .date-badge {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 20px;
+      margin-top: 4px;
+    }
 
-.empty-check{
-  text-align:center;padding:52px 0 20px;color:var(--muted);
-  font-size:.88rem;line-height:2.2;
-}
-.empty-check .eicon{font-size:2.4rem;display:block;margin-bottom:4px;}
+    .progress-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+    }
 
-/* リセットリンク */
-#reset-link{
-  display:block;text-align:center;margin:18px auto 0;
-  font-size:.76rem;color:var(--muted);cursor:pointer;
-  background:none;border:none;text-decoration:underline;
-  text-underline-offset:3px;padding:4px 0;
-}
-#reset-link:hover{color:var(--danger);}
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
 
-/* ════════════════════════════════
-   管理ページ
-════════════════════════════════ */
-#manage-header{
-  padding:16px 20px 10px;display:flex;align-items:center;justify-content:space-between;
-}
-#manage-header h2{font-size:.95rem;font-weight:700;color:var(--muted);}
-#manage-header span{font-size:.8rem;color:var(--muted);}
+    .progress-label { font-size: 13px; color: var(--text-secondary); }
 
-.manage-item{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);margin:0 20px 9px;
-  display:flex;align-items:center;gap:0;overflow:hidden;
-}
-/* 並び替えハンドル */
-.sort-handle{
-  padding:0 10px 0 14px;color:var(--border);cursor:grab;flex-shrink:0;
-  touch-action:none;display:flex;align-items:center;
-}
-.sort-handle:active{cursor:grabbing;}
-.sort-handle svg{width:16px;height:16px;fill:currentColor;}
+    .progress-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green);
+    }
 
-.manage-info{flex:1;min-width:0;padding:13px 0;}
-.manage-name{
-  font-size:.93rem;font-weight:600;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.manage-sub{font-size:.73rem;color:var(--muted);margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-.badge{
-  font-size:.64rem;padding:2px 7px;border-radius:99px;font-weight:700;
-}
-.badge.m{background:#78350f33;color:var(--morning);border:1px solid #78350f66;}
-.badge.n{background:#3730a333;color:var(--night);  border:1px solid #3730a366;}
+    .progress-track {
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
 
-.manage-actions{display:flex;flex-shrink:0;}
-.act-btn{
-  background:none;border:none;cursor:pointer;padding:14px 10px;
-  color:var(--muted);transition:color .15s;
-}
-.act-btn:hover{color:var(--text);}
-.act-btn.del:hover{color:var(--danger);}
-.act-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;}
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 3px;
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.empty-manage{
-  text-align:center;padding:56px 0 20px;color:var(--muted);
-  font-size:.88rem;line-height:2.2;
-}
-.empty-manage .eicon{font-size:2.4rem;display:block;margin-bottom:4px;}
+    .section { margin-bottom: 1.5rem; }
 
-/* FAB */
-#fab{
-  position:fixed;bottom:80px;right:20px;width:52px;height:52px;
-  border-radius:50%;background:linear-gradient(135deg,#6366f1,#818cf8);
-  color:#fff;border:none;font-size:1.5rem;cursor:pointer;
-  display:none;align-items:center;justify-content:center;
-  box-shadow:0 4px 18px #6366f155;transition:transform .15s,box-shadow .15s;
-}
-#fab.show{display:flex;}
-#fab:hover{transform:scale(1.07);box-shadow:0 6px 26px #6366f177;}
-#fab:active{transform:scale(.94);}
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-left: 2px;
+    }
 
-/* ════════════════════════════════
-   モーダル（追加・編集共用）
-════════════════════════════════ */
-.overlay{
-  position:fixed;inset:0;background:#00000088;
-  display:flex;align-items:flex-end;justify-content:center;
-  z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;
-}
-.overlay.show{opacity:1;pointer-events:all;}
-.modal{
-  background:var(--surface);border-radius:var(--radius) var(--radius) 0 0;
-  padding:22px 20px 30px;width:100%;max-width:480px;
-  transform:translateY(40px);transition:transform .25s cubic-bezier(.22,.68,0,1.1);
-}
-.overlay.show .modal{transform:translateY(0);}
-.modal-title{font-size:1rem;font-weight:700;margin-bottom:18px;}
-.field{margin-bottom:13px;}
-.field label{display:block;font-size:.76rem;color:var(--muted);margin-bottom:5px;}
-.field input{
-  width:100%;background:var(--surface2);border:1px solid var(--border);
-  border-radius:10px;padding:10px 14px;font-size:.93rem;color:var(--text);
-  outline:none;transition:border-color .2s;
-}
-.field input:focus{border-color:#6366f1;}
-.timing-row{display:flex;gap:9px;}
-.timing-btn{
-  flex:1;padding:9px 0;border-radius:10px;
-  border:2px solid var(--border);background:var(--surface2);
-  color:var(--muted);font-size:.88rem;font-weight:600;
-  cursor:pointer;transition:all .15s;
-}
-.timing-btn.on-m{background:#78350f44;border-color:var(--morning);color:var(--morning);}
-.timing-btn.on-n{background:#3730a344;border-color:var(--night);  color:var(--night);}
-.modal-btns{display:flex;gap:9px;margin-top:18px;}
-.btn-cancel{
-  flex:1;padding:11px 0;border-radius:10px;
-  border:1px solid var(--border);background:transparent;
-  color:var(--muted);font-size:.93rem;cursor:pointer;
-}
-.btn-save{
-  flex:2;padding:11px 0;border-radius:10px;border:none;
-  background:linear-gradient(135deg,#6366f1,#818cf8);
-  color:#fff;font-size:.93rem;font-weight:700;cursor:pointer;transition:opacity .2s;
-}
-.btn-save:disabled{opacity:.35;cursor:default;}
+    .pill-list { display: flex; flex-direction: column; gap: 7px; }
 
-/* ドラッグ中 */
-.dragging{opacity:.5;background:var(--surface2)!important;}
-.drag-over{border:2px dashed #6366f1!important;}
+    .pill-item {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 13px 14px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      user-select: none;
+    }
 
-@keyframes pop{0%{transform:scale(1)}40%{transform:scale(.92)}100%{transform:scale(1)}}
-.check-item:active{animation:pop .14s ease;}
-</style>
+    .pill-item:active { transform: scale(0.98); }
+
+    .pill-item.checked {
+      border-color: var(--green-border);
+      background: var(--green-bg);
+    }
+
+    .check-circle {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .pill-item.checked .check-circle {
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .check-icon { opacity: 0; transition: opacity 0.15s; }
+    .pill-item.checked .check-icon { opacity: 1; }
+
+    .pill-info { flex: 1; min-width: 0; }
+
+    .pill-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: color 0.15s;
+    }
+
+    .pill-item.checked .pill-name { color: var(--green); }
+
+    .pill-dose {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: 2px;
+    }
+
+    .pill-item.checked .pill-dose { color: var(--green); opacity: 0.6; }
+
+    .footer {
+      display: flex;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .reset-btn {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 20px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .reset-btn:active { opacity: 0.6; }
+
+    .all-done {
+      text-align: center;
+      padding: 1.5rem 0 0.5rem;
+      font-size: 14px;
+      color: var(--green);
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .all-done.visible { opacity: 1; }
+
+    /* 履歴 */
+    .history-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 1.5rem;
+    }
+
+    .streak-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+    }
+
+    .streak-item { flex: 1; text-align: center; }
+
+    .streak-num {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .streak-label { font-size: 11px; color: var(--text-tertiary); }
+
+    .streak-divider {
+      width: 0.5px;
+      background: var(--border);
+      align-self: stretch;
+    }
+
+    .history-empty {
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 14px;
+      padding: 3rem 0;
+    }
+
+    .history-day {
+      margin-bottom: 10px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border);
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .history-day-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      gap: 10px;
+    }
+
+    .history-day-header:active { opacity: 0.7; }
+
+    .history-date {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+
+    .history-bar-wrap {
+      flex: 1;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .history-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+
+    .history-bar-fill.full { background: var(--green); }
+    .history-bar-fill.partial { background: var(--amber); }
+    .history-bar-fill.none { background: var(--red-border); }
+
+    .history-rate {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+
+    .history-rate.full {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 0.5px solid var(--green-border);
+    }
+
+    .history-rate.partial {
+      background: var(--amber-bg);
+      color: var(--amber);
+      border: 0.5px solid var(--amber-border);
+    }
+
+    .history-rate.none {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 0.5px solid var(--red-border);
+    }
+
+    .history-chevron {
+      font-size: 10px;
+      color: var(--text-tertiary);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .history-chevron.open { transform: rotate(180deg); }
+
+    .history-detail {
+      display: none;
+      border-top: 0.5px solid var(--border);
+      padding: 10px 14px 12px;
+    }
+
+    .history-detail.open { display: block; }
+
+    .history-pill-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 13px;
+    }
+
+    .history-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .history-dot.ok { background: var(--green); }
+    .history-dot.ng { background: var(--border); }
+
+    .history-pill-name { color: var(--text-primary); }
+    .history-pill-name.ng { color: var(--text-tertiary); }
+  </style>
 </head>
 <body>
+<div class="app">
 
-<!-- ヘッダー -->
-<header>
-  <div class="header-title">💊 サプリ管理</div>
-  <div id="date-display"></div>
-</header>
-
-<!-- ════ 今日ページ ════ -->
-<div class="page active" id="page-today">
-
-  <!-- 進捗バー -->
-  <div id="progress-wrap">
-    <div class="prog-row">
-      <span class="prog-label">朝</span>
-      <div class="prog-bar-bg"><div class="prog-bar-fill morning" id="prog-m"></div></div>
-      <span class="prog-count" id="prog-m-txt">-</span>
-    </div>
-    <div class="prog-row">
-      <span class="prog-label">夜</span>
-      <div class="prog-bar-bg"><div class="prog-bar-fill night" id="prog-n"></div></div>
-      <span class="prog-count" id="prog-n-txt">-</span>
-    </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('today')">今日</button>
+    <button class="tab-btn" onclick="switchTab('history')">履歴</button>
   </div>
 
-  <!-- 全完了バナー -->
-  <div id="all-done-banner">
-    <svg viewBox="0 0 20 20" fill="none" style="width:18px;height:18px;stroke:#34d399;stroke-width:2;flex-shrink:0">
-      <path d="M4 10l4 4 8-8" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    本日分のサプリをすべて服用しました！
-  </div>
-
-  <!-- 朝/夜タブ -->
-  <div id="time-tabs">
-    <button class="time-tab active morning" data-sec="morning">☀️ 朝</button>
-    <button class="time-tab night"          data-sec="night">🌙 夜</button>
-  </div>
-
-  <!-- チェックリスト -->
-  <div id="check-list-wrap">
-    <div class="check-section active" id="sec-morning"></div>
-    <div class="check-section"        id="sec-night"></div>
-  </div>
-
-  <button id="reset-link">今日のチェックをリセット</button>
-</div>
-
-<!-- ════ 管理ページ ════ -->
-<div class="page" id="page-manage">
-  <div id="manage-header">
-    <h2>サプリ一覧</h2>
-    <span id="manage-count"></span>
-  </div>
-  <div id="manage-list"></div>
-</div>
-
-<!-- ボトムナビ -->
-<nav id="bottom-nav">
-  <button class="nav-btn active" id="nav-today">
-    <div class="nav-icon-bg">
-      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    </div>
-    今日
-  </button>
-  <button class="nav-btn" id="nav-manage">
-    <div class="nav-icon-bg">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
-    </div>
-    管理
-  </button>
-</nav>
-
-<!-- FAB（管理ページ用） -->
-<button id="fab" title="サプリを追加">＋</button>
-
-<!-- モーダル -->
-<div class="overlay" id="overlay">
-  <div class="modal">
-    <div class="modal-title" id="modal-title">サプリを追加</div>
-    <div class="field">
-      <label>サプリ名 *</label>
-      <input type="text" id="inp-name" placeholder="例：ビタミンC、鉄分…" maxlength="30">
-    </div>
-    <div class="field">
-      <label>メモ（容量・個数など）</label>
-      <input type="text" id="inp-note" placeholder="例：500mg × 2錠" maxlength="40">
-    </div>
-    <div class="field">
-      <label>服用タイミング *（複数選択可）</label>
-      <div class="timing-row">
-        <button class="timing-btn" id="tbtn-m" type="button">☀️ 朝</button>
-        <button class="timing-btn" id="tbtn-n" type="button">🌙 夜</button>
+  <!-- 今日 -->
+  <div class="page active" id="page-today">
+    <div class="header">
+      <div class="header-top">
+        <h1 class="app-title">サプリ記録</h1>
+        <div class="date-badge" id="today-label"></div>
+      </div>
+      <div class="progress-card">
+        <div class="progress-row">
+          <span class="progress-label">今日の進捗</span>
+          <span class="progress-count" id="progress-text">0 / 9</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+        </div>
       </div>
     </div>
-    <div class="modal-btns">
-      <button class="btn-cancel" id="btn-cancel">キャンセル</button>
-      <button class="btn-save"   id="btn-save" disabled>保存する</button>
+
+    <div class="section">
+      <p class="section-label">朝</p>
+      <div class="pill-list" id="morning-list"></div>
+    </div>
+
+    <div class="section">
+      <p class="section-label">夜</p>
+      <div class="pill-list" id="evening-list"></div>
+    </div>
+
+    <div class="all-done" id="all-done">✓ 今日のサプリ、すべて完了！</div>
+
+    <div class="footer">
+      <button class="reset-btn" onclick="resetToday()">今日のチェックをリセット</button>
     </div>
   </div>
+
+  <!-- 履歴 -->
+  <div class="page" id="page-history">
+    <h2 class="history-title">履歴</h2>
+    <div class="streak-card">
+      <div class="streak-item">
+        <div class="streak-num" id="streak-num">0</div>
+        <div class="streak-label">連続達成日数</div>
+      </div>
+      <div class="streak-divider"></div>
+      <div class="streak-item">
+        <div class="streak-num" id="avg-num">—</div>
+        <div class="streak-label">直近7日の平均</div>
+      </div>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
 </div>
-
 <script>
-// ══════════════════════════════════════════════
-//  データ
-// ══════════════════════════════════════════════
-// supplements: [{id, name, note, timing:['morning'|'night']}]
-// checks: { "YYYY-MM-DD": { "<id>-morning": bool, ... } }
+const SUPPLEMENTS = [
+  { id: "lcarnitine", name: "L-カルニチン",            dose: "500mg", timing: "morning" },
+  { id: "citicoline",  name: "シチコリン",               dose: "300mg", timing: "morning" },
+  { id: "epa",         name: "EPA",                     dose: "360mg", timing: "morning" },
+  { id: "dha",         name: "DHA",                     dose: "154mg", timing: "morning" },
+  { id: "natto",       name: "ナットウキナーゼ・ビタミンE", dose: "",      timing: "morning" },
+  { id: "rhodiola",    name: "ロディオラ",               dose: "500mg", timing: "morning" },
+  { id: "ps",          name: "ホスファチジルセリン",     dose: "",      timing: "morning" },
+  { id: "nmn",         name: "NMN",                     dose: "233mg", timing: "evening" },
+  { id: "camagzincd",  name: "Ca・Mg・亜鉛・ビタミンD",  dose: "",      timing: "evening" },
+];
 
-const TODAY = () => new Date().toLocaleDateString('sv-SE');
+const TOTAL = SUPPLEMENTS.length;
+const DAYS = ["日","月","火","水","木","金","土"];
 
-let supplements = [];
-let checks = {};
+function dateKey(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return "supp_" + y + "-" + m + "-" + dd;
+}
 
-const load = () => {
-  supplements = JSON.parse(localStorage.getItem('suppl_list')   || '[]');
-  checks      = JSON.parse(localStorage.getItem('suppl_checks') || '{}');
-};
-const saveList   = () => localStorage.setItem('suppl_list',   JSON.stringify(supplements));
-const saveChecks = () => localStorage.setItem('suppl_checks', JSON.stringify(checks));
+function todayKey() { return dateKey(new Date()); }
 
-const getCheck = (id, t) => !!(checks[TODAY()] || {})[`${id}-${t}`];
-const setCheck = (id, t, v) => {
-  if (!checks[TODAY()]) checks[TODAY()] = {};
-  checks[TODAY()][`${id}-${t}`] = v;
-  saveChecks();
-};
+function loadState(key) {
+  try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch(e) { return {}; }
+}
 
-const esc = s => s.replace(/[&<>"']/g, c =>
-  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function saveState(s) { localStorage.setItem(todayKey(), JSON.stringify(s)); }
 
-// ══════════════════════════════════════════════
-//  日付表示
-// ══════════════════════════════════════════════
-const updateDate = () => {
-  const d = new Date();
-  const wd = '日月火水木金土'[d.getDay()];
-  document.getElementById('date-display').innerHTML =
-    `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} (${wd})<br>` +
-    `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-};
-
-// ══════════════════════════════════════════════
-//  今日ページ描画
-// ══════════════════════════════════════════════
-function renderToday() {
-  ['morning','night'].forEach(t => {
-    const el    = document.getElementById(`sec-${t}`);
-    const items = supplements.filter(s => s.timing.includes(t));
-    if (!items.length) {
-      const label = t === 'morning' ? '朝' : '夜';
-      const icon  = t === 'morning' ? '☀️' : '🌙';
-      el.innerHTML = `<div class="empty-check"><span class="eicon">${icon}</span>${label}のサプリが登録されていません。<br>「管理」タブからサプリを追加してください。</div>`;
-      return;
-    }
-    el.innerHTML = items.map(s => {
-      const done = getCheck(s.id, t);
-      const cls  = t === 'morning' ? 'm-item' : 'n-item';
-      const stroke = t === 'morning' ? '#1c1003' : '#1a1040';
-      return `
-        <div class="check-item ${cls}${done?' done':''}" data-id="${s.id}" data-t="${t}">
-          <div class="circle">
-            <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
-              <path d="M1 5L5 9L12 1" stroke="${stroke}" stroke-width="2.2"
-                    stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </div>
-          <div class="check-info">
-            <div class="check-name">${esc(s.name)}</div>
-            ${s.note ? `<div class="check-note">${esc(s.note)}</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
-  });
-  updateProgress();
+function doneCount(state) {
+  return SUPPLEMENTS.filter(s => state[s.id]).length;
 }
 
 function updateProgress() {
-  let totalAll = 0, totalDone = 0;
-  ['morning','night'].forEach(t => {
-    const all  = supplements.filter(s => s.timing.includes(t));
-    const done = all.filter(s => getCheck(s.id, t)).length;
-    const pct  = all.length ? done / all.length * 100 : 0;
-    document.getElementById(`prog-${t==='morning'?'m':'n'}`).style.width = pct + '%';
-    document.getElementById(`prog-${t==='morning'?'m':'n'}-txt`).textContent = `${done}/${all.length}`;
-    totalAll  += all.length;
-    totalDone += done;
-  });
-  const banner = document.getElementById('all-done-banner');
-  banner.classList.toggle('show', totalAll > 0 && totalDone === totalAll);
+  const state = loadState(todayKey());
+  const done = doneCount(state);
+  document.getElementById("progress-text").textContent = done + " / " + TOTAL;
+  document.getElementById("progress-fill").style.width = Math.round(done / TOTAL * 100) + "%";
+  document.getElementById("all-done").classList.toggle("visible", done === TOTAL);
 }
 
-// チェック操作
-document.getElementById('check-list-wrap').addEventListener('click', e => {
-  const item = e.target.closest('.check-item');
-  if (!item) return;
-  const { id, t } = item.dataset;
-  setCheck(id, t, !getCheck(id, t));
-  renderToday();
-});
+function renderList(timing, containerId) {
+  const state = loadState(todayKey());
+  const container = document.getElementById(containerId);
+  container.innerHTML = "";
+  SUPPLEMENTS.filter(s => s.timing === timing).forEach(s => {
+    const checked = !!state[s.id];
+    const item = document.createElement("div");
+    item.className = "pill-item" + (checked ? " checked" : "");
+    item.innerHTML = `
+      <div class="check-circle">
+        <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <polyline points="2,6 5,9 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="pill-info">
+        <div class="pill-name">${s.name}</div>
+        ${s.dose ? `<div class="pill-dose">${s.dose}</div>` : ""}
+      </div>
+    `;
+    item.addEventListener("click", () => {
+      const st = loadState(todayKey());
+      st[s.id] = !st[s.id];
+      saveState(st);
+      renderToday();
+    });
+    container.appendChild(item);
+  });
+}
 
-// タブ切り替え
-document.getElementById('time-tabs').addEventListener('click', e => {
-  const btn = e.target.closest('.time-tab');
-  if (!btn) return;
-  document.querySelectorAll('.time-tab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  document.querySelectorAll('.check-section').forEach(s => s.classList.remove('active'));
-  document.getElementById(`sec-${btn.dataset.sec}`).classList.add('active');
-});
+function renderToday() {
+  renderList("morning", "morning-list");
+  renderList("evening", "evening-list");
+  updateProgress();
+}
 
-// リセット
-document.getElementById('reset-link').onclick = () => {
-  if (!confirm('今日のチェックをすべてリセットしますか？')) return;
-  delete checks[TODAY()];
-  saveChecks();
-  renderToday();
-};
+function resetToday() {
+  if (confirm("今日のチェックをリセットしますか？")) {
+    localStorage.removeItem(todayKey());
+    renderToday();
+  }
+}
 
-// ══════════════════════════════════════════════
-//  管理ページ描画
-// ══════════════════════════════════════════════
-function renderManage() {
-  const list = document.getElementById('manage-list');
-  document.getElementById('manage-count').textContent =
-    supplements.length ? `${supplements.length} 件登録中` : '';
+function getAllHistoryKeys() {
+  const keys = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("supp_")) keys.push(k);
+  }
+  return keys.sort().reverse();
+}
 
-  if (!supplements.length) {
-    list.innerHTML = `<div class="empty-manage"><span class="eicon">📋</span>サプリが登録されていません。<br>＋ ボタンから追加してください。</div>`;
+function formatDateLabel(key) {
+  const parts = key.replace("supp_", "").split("-");
+  const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
+  return (d.getMonth()+1) + "/" + d.getDate() + "（" + DAYS[d.getDay()] + "）";
+}
+
+function calcStreak(keys) {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const k = dateKey(d);
+    const state = loadState(k);
+    if (doneCount(state) === TOTAL) {
+      streak++;
+    } else if (i > 0) {
+      break;
+    }
+  }
+  return streak;
+}
+
+function calcAvg7() {
+  const today = new Date();
+  let total = 0, days = 0;
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    const k = dateKey(d);
+    const state = loadState(k);
+    if (Object.keys(state).length > 0) {
+      total += Math.round(doneCount(state) / TOTAL * 100);
+      days++;
+    }
+  }
+  return days > 0 ? Math.round(total / days) + "%" : "—";
+}
+
+function renderHistory() {
+  const keys = getAllHistoryKeys();
+  document.getElementById("streak-num").textContent = calcStreak(keys);
+  document.getElementById("avg-num").textContent = calcAvg7();
+
+  const container = document.getElementById("history-list");
+  container.innerHTML = "";
+
+  if (!keys.length) {
+    container.innerHTML = `<div class="history-empty">まだ記録がありません</div>`;
     return;
   }
 
-  list.innerHTML = supplements.map((s, i) => {
-    const badges = s.timing.map(t =>
-      `<span class="badge ${t==='morning'?'m':'n'}">${t==='morning'?'☀️朝':'🌙夜'}</span>`
-    ).join('');
-    return `
-      <div class="manage-item" data-id="${s.id}" draggable="true">
-        <div class="sort-handle" title="ドラッグで並び替え">
-          <svg viewBox="0 0 16 16"><rect x="2" y="4" width="12" height="1.5" rx=".75"/>
-          <rect x="2" y="7.25" width="12" height="1.5" rx=".75"/>
-          <rect x="2" y="10.5" width="12" height="1.5" rx=".75"/></svg>
-        </div>
-        <div class="manage-info">
-          <div class="manage-name">${esc(s.name)}</div>
-          <div class="manage-sub">
-            ${badges}
-            ${s.note ? `<span>${esc(s.note)}</span>` : ''}
-          </div>
-        </div>
-        <div class="manage-actions">
-          <button class="act-btn edit" data-id="${s.id}" title="編集">
-            <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-            <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-          </button>
-          <button class="act-btn del" data-id="${s.id}" title="削除">
-            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/>
-            <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
-            <path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
-          </button>
-        </div>
-      </div>`;
-  }).join('');
+  keys.forEach(key => {
+    const state = loadState(key);
+    const done = doneCount(state);
+    const pct = Math.round(done / TOTAL * 100);
+    const cls = pct === 100 ? "full" : pct > 0 ? "partial" : "none";
+    const label = pct === 100 ? "完全達成" : pct > 0 ? done + "/" + TOTAL : "未記録";
 
-  initDragSort();
-}
+    const day = document.createElement("div");
+    day.className = "history-day";
 
-// ── 管理リスト：編集・削除 ──
-document.getElementById('manage-list').addEventListener('click', e => {
-  const editBtn = e.target.closest('.act-btn.edit');
-  const delBtn  = e.target.closest('.act-btn.del');
-  if (editBtn) openModal(editBtn.dataset.id);
-  if (delBtn) {
-    const s = supplements.find(x => x.id === delBtn.dataset.id);
-    if (!s) return;
-    if (!confirm(`「${s.name}」を削除しますか？`)) return;
-    supplements = supplements.filter(x => x.id !== delBtn.dataset.id);
-    saveList();
-    renderManage();
-    renderToday();
-  }
-});
+    const chevId = "chev-" + key;
+    const detailId = "detail-" + key;
 
-// ══════════════════════════════════════════════
-//  モーダル（追加・編集共用）
-// ══════════════════════════════════════════════
-const overlay  = document.getElementById('overlay');
-const inpName  = document.getElementById('inp-name');
-const inpNote  = document.getElementById('inp-note');
-const tbtnM    = document.getElementById('tbtn-m');
-const tbtnN    = document.getElementById('tbtn-n');
-const btnSave  = document.getElementById('btn-save');
+    const header = document.createElement("div");
+    header.className = "history-day-header";
+    header.innerHTML = `
+      <span class="history-date">${formatDateLabel(key)}</span>
+      <div class="history-bar-wrap">
+        <div class="history-bar-fill ${cls}" style="width:${pct}%"></div>
+      </div>
+      <span class="history-rate ${cls}">${label}</span>
+      <span class="history-chevron" id="${chevId}">▼</span>
+    `;
 
-let editId = null;
-let selM = false, selN = false;
+    const detail = document.createElement("div");
+    detail.className = "history-detail";
+    detail.id = detailId;
 
-const closeModal = () => { overlay.classList.remove('show'); editId = null; };
-
-const validateModal = () => {
-  btnSave.disabled = !(inpName.value.trim() && (selM || selN));
-};
-
-function openModal(id = null) {
-  editId = id;
-  document.getElementById('modal-title').textContent = id ? 'サプリを編集' : 'サプリを追加';
-  if (id) {
-    const s = supplements.find(x => x.id === id);
-    inpName.value = s.name;
-    inpNote.value = s.note || '';
-    selM = s.timing.includes('morning');
-    selN = s.timing.includes('night');
-  } else {
-    inpName.value = ''; inpNote.value = '';
-    selM = false; selN = false;
-  }
-  tbtnM.classList.toggle('on-m', selM);
-  tbtnN.classList.toggle('on-n', selN);
-  validateModal();
-  overlay.classList.add('show');
-  setTimeout(() => inpName.focus(), 200);
-}
-
-tbtnM.onclick = () => { selM = !selM; tbtnM.classList.toggle('on-m', selM); validateModal(); };
-tbtnN.onclick = () => { selN = !selN; tbtnN.classList.toggle('on-n', selN); validateModal(); };
-inpName.addEventListener('input', validateModal);
-document.getElementById('btn-cancel').onclick = closeModal;
-overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
-
-btnSave.onclick = () => {
-  const name   = inpName.value.trim();
-  const note   = inpNote.value.trim();
-  const timing = [...(selM?['morning']:[]), ...(selN?['night']:[])];
-  if (!name || !timing.length) return;
-
-  if (editId) {
-    const s = supplements.find(x => x.id === editId);
-    s.name = name; s.note = note; s.timing = timing;
-  } else {
-    supplements.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2,5), name, note, timing });
-  }
-  saveList();
-  renderManage();
-  renderToday();
-  closeModal();
-};
-
-inpName.addEventListener('keydown', e => { if (e.key === 'Enter') inpNote.focus(); });
-inpNote.addEventListener('keydown', e => { if (e.key === 'Enter' && !btnSave.disabled) btnSave.click(); });
-
-// ══════════════════════════════════════════════
-//  ドラッグ＆ドロップ並び替え
-// ══════════════════════════════════════════════
-let dragSrc = null;
-
-function initDragSort() {
-  document.querySelectorAll('.manage-item').forEach(item => {
-    item.addEventListener('dragstart', e => {
-      dragSrc = item;
-      item.classList.add('dragging');
-      e.dataTransfer.effectAllowed = 'move';
+    SUPPLEMENTS.forEach(s => {
+      const ok = !!state[s.id];
+      const row = document.createElement("div");
+      row.className = "history-pill-row";
+      row.innerHTML = `
+        <div class="history-dot ${ok ? "ok" : "ng"}"></div>
+        <span class="history-pill-name ${ok ? "" : "ng"}">${s.name}${s.dose ? " " + s.dose : ""}</span>
+      `;
+      detail.appendChild(row);
     });
-    item.addEventListener('dragend', () => {
-      item.classList.remove('dragging');
-      document.querySelectorAll('.manage-item').forEach(i => i.classList.remove('drag-over'));
+
+    header.addEventListener("click", () => {
+      const isOpen = detail.classList.contains("open");
+      detail.classList.toggle("open", !isOpen);
+      const chev = document.getElementById(chevId);
+      if (chev) chev.classList.toggle("open", !isOpen);
     });
-    item.addEventListener('dragover', e => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      if (item !== dragSrc) {
-        document.querySelectorAll('.manage-item').forEach(i => i.classList.remove('drag-over'));
-        item.classList.add('drag-over');
-      }
-    });
-    item.addEventListener('drop', e => {
-      e.preventDefault();
-      if (!dragSrc || dragSrc === item) return;
-      const srcId = dragSrc.dataset.id;
-      const dstId = item.dataset.id;
-      const si = supplements.findIndex(x => x.id === srcId);
-      const di = supplements.findIndex(x => x.id === dstId);
-      const [moved] = supplements.splice(si, 1);
-      supplements.splice(di, 0, moved);
-      saveList();
-      renderManage();
-    });
+
+    day.appendChild(header);
+    day.appendChild(detail);
+    container.appendChild(day);
   });
 }
 
-// ══════════════════════════════════════════════
-//  ボトムナビ
-// ══════════════════════════════════════════════
-document.getElementById('nav-today').onclick = () => switchPage('today');
-document.getElementById('nav-manage').onclick = () => switchPage('manage');
-
-function switchPage(name) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById(`page-${name}`).classList.add('active');
-  document.getElementById(`nav-${name}`).classList.add('active');
-  const fab = document.getElementById('fab');
-  fab.classList.toggle('show', name === 'manage');
-  if (name === 'manage') renderManage();
+function switchTab(tab) {
+  document.querySelectorAll(".tab-btn").forEach((b, i) => {
+    b.classList.toggle("active", (i === 0 && tab === "today") || (i === 1 && tab === "history"));
+  });
+  document.getElementById("page-today").classList.toggle("active", tab === "today");
+  document.getElementById("page-history").classList.toggle("active", tab === "history");
+  if (tab === "history") renderHistory();
 }
 
-document.getElementById('fab').onclick = () => openModal();
+const d = new Date();
+document.getElementById("today-label").textContent =
+  (d.getMonth()+1) + "/" + d.getDate() + "（" + DAYS[d.getDay()] + "）";
 
-// ══════════════════════════════════════════════
-//  初期化
-// ══════════════════════════════════════════════
-load();
 renderToday();
-updateDate();
-setInterval(updateDate, 30000);
 
-// 日付変わり自動リフレッシュ
-let lastDate = TODAY();
-setInterval(() => {
-  if (TODAY() !== lastDate) { lastDate = TODAY(); renderToday(); }
-}, 60000);
-
-// Service Worker 登録
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .catch(err => console.warn('SW registration failed:', err));
-  });
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js");
 }
 </script>
 </body>
