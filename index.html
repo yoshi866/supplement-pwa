@@ -11,422 +11,141 @@
   <link rel="apple-touch-icon" href="icon-192.png">
   <title>サプリ記録</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --bg: #f9f9f7;
-      --surface: #ffffff;
-      --border: #e8e6e0;
-      --text-primary: #1a1a18;
-      --text-secondary: #6b6b67;
-      --text-tertiary: #a5a5a0;
-      --green: #2d8a5e;
-      --green-bg: #edf7f2;
-      --green-border: #b8dfc9;
-      --amber: #b87a1a;
-      --amber-bg: #fdf4e3;
-      --amber-border: #f0d090;
-      --red: #c0392b;
-      --red-bg: #fdf0ee;
-      --red-border: #f0b8b0;
-      --radius: 14px;
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#f9f9f7;--surface:#fff;--border:#e8e6e0;
+      --text-primary:#1a1a18;--text-secondary:#6b6b67;--text-tertiary:#a5a5a0;
+      --green:#2d8a5e;--green-bg:#edf7f2;--green-border:#b8dfc9;
+      --amber:#b87a1a;--amber-bg:#fdf4e3;--amber-border:#f0d090;
+      --red:#c0392b;--red-bg:#fdf0ee;--red-border:#f0b8b0;
+      --blue:#1a5fa8;--blue-bg:#eaf1fb;--blue-border:#b0cef0;
+      --radius:14px;
+      --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)
     }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #141412;
-        --surface: #1e1e1c;
-        --border: #2e2e2a;
-        --text-primary: #f0efe8;
-        --text-secondary: #9a9a94;
-        --text-tertiary: #5a5a56;
-        --green: #4db87e;
-        --green-bg: #162b20;
-        --green-border: #2a5040;
-        --amber: #d4a030;
-        --amber-bg: #2a2010;
-        --amber-border: #5a4010;
-        --red: #e05545;
-        --red-bg: #2a1412;
-        --red-border: #5a2820;
-      }
-    }
-
-    html, body {
-      height: 100%;
-      background: var(--bg);
-      color: var(--text-primary);
-      font-family: -apple-system, 'Hiragino Sans', sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    .app {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: calc(var(--safe-top) + 1.5rem) 1.25rem calc(var(--safe-bottom) + 2rem);
-      min-height: 100vh;
-    }
-
-    .tab-bar {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 1.5rem;
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 4px;
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      background: none;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s, color 0.15s;
-    }
-
-    .tab-btn.active {
-      background: var(--bg);
-      color: var(--text-primary);
-      border: 0.5px solid var(--border);
-    }
-
-    .page { display: none; }
-    .page.active { display: block; }
-
-    .header { margin-bottom: 1.75rem; }
-
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-    }
-
-    .app-title {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      color: var(--text-primary);
-    }
-
-    .date-badge {
-      font-size: 12px;
-      color: var(--text-secondary);
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      padding: 5px 10px;
-      border-radius: 20px;
-      margin-top: 4px;
-    }
-
-    .progress-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.25rem;
-    }
-
-    .progress-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .progress-label { font-size: 13px; color: var(--text-secondary); }
-
-    .progress-count {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--green);
-    }
-
-    .progress-track {
-      height: 5px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: var(--green);
-      border-radius: 3px;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .section { margin-bottom: 1.5rem; }
-
-    .section-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-tertiary);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      padding-left: 2px;
-    }
-
-    .pill-list { display: flex; flex-direction: column; gap: 7px; }
-
-    .pill-item {
-      display: flex;
-      align-items: center;
-      gap: 13px;
-      padding: 13px 14px;
-      border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      background: var(--surface);
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
-      user-select: none;
-    }
-
-    .pill-item:active { transform: scale(0.98); }
-
-    .pill-item.checked {
-      border-color: var(--green-border);
-      background: var(--green-bg);
-    }
-
-    .check-circle {
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      border: 1.5px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .pill-item.checked .check-circle {
-      background: var(--green);
-      border-color: var(--green);
-    }
-
-    .check-icon { opacity: 0; transition: opacity 0.15s; }
-    .pill-item.checked .check-icon { opacity: 1; }
-
-    .pill-info { flex: 1; min-width: 0; }
-
-    .pill-name {
-      font-size: 15px;
-      font-weight: 500;
-      color: var(--text-primary);
-      transition: color 0.15s;
-    }
-
-    .pill-item.checked .pill-name { color: var(--green); }
-
-    .pill-dose {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      margin-top: 2px;
-    }
-
-    .pill-item.checked .pill-dose { color: var(--green); opacity: 0.6; }
-
-    .footer {
-      display: flex;
-      justify-content: center;
-      margin-top: 0.5rem;
-    }
-
-    .reset-btn {
-      font-size: 12px;
-      color: var(--text-tertiary);
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 8px 16px;
-      border-radius: 20px;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .reset-btn:active { opacity: 0.6; }
-
-    .all-done {
-      text-align: center;
-      padding: 1.5rem 0 0.5rem;
-      font-size: 14px;
-      color: var(--green);
-      font-weight: 500;
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
-
-    .all-done.visible { opacity: 1; }
-
+    @media(prefers-color-scheme:dark){:root{
+      --bg:#141412;--surface:#1e1e1c;--border:#2e2e2a;
+      --text-primary:#f0efe8;--text-secondary:#9a9a94;--text-tertiary:#5a5a56;
+      --green:#4db87e;--green-bg:#162b20;--green-border:#2a5040;
+      --amber:#d4a030;--amber-bg:#2a2010;--amber-border:#5a4010;
+      --red:#e05545;--red-bg:#2a1412;--red-border:#5a2820;
+      --blue:#4a90d9;--blue-bg:#0e1e30;--blue-border:#1e3a5a
+    }}
+    html,body{height:100%;background:var(--bg);color:var(--text-primary);font-family:-apple-system,'Hiragino Sans',sans-serif;-webkit-font-smoothing:antialiased}
+    .app{max-width:480px;margin:0 auto;padding:calc(var(--safe-top) + 1.25rem) 1.25rem calc(var(--safe-bottom) + 2rem);min-height:100vh}
+    .tab-bar{display:flex;gap:5px;margin-bottom:1.25rem;background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:4px}
+    .tab-btn{flex:1;padding:7px 4px;font-size:12px;font-weight:500;color:var(--text-secondary);background:none;border:none;border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background 0.15s,color 0.15s}
+    .tab-btn.active{background:var(--bg);color:var(--text-primary);border:0.5px solid var(--border)}
+    .page{display:none}.page.active{display:block}
+    /* 今日 */
+    .header{margin-bottom:1.5rem}
+    .header-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem}
+    .app-title{font-size:24px;font-weight:700;letter-spacing:-0.5px}
+    .date-badge{font-size:12px;color:var(--text-secondary);background:var(--surface);border:0.5px solid var(--border);padding:5px 10px;border-radius:20px;margin-top:2px}
+    .progress-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem}
+    .progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .progress-label{font-size:13px;color:var(--text-secondary)}
+    .progress-count{font-size:13px;font-weight:600;color:var(--green)}
+    .progress-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+    .progress-fill{height:100%;background:var(--green);border-radius:3px;transition:width 0.4s cubic-bezier(0.4,0,0.2,1)}
+    .section{margin-bottom:1.25rem}
+    .section-label{font-size:11px;font-weight:600;color:var(--text-tertiary);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;padding-left:2px}
+    .pill-list{display:flex;flex-direction:column;gap:6px}
+    .pill-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background 0.15s,border-color 0.15s,transform 0.1s;user-select:none}
+    .pill-item:active{transform:scale(0.98)}
+    .pill-item.checked{border-color:var(--green-border);background:var(--green-bg)}
+    .pill-item.low-stock{border-color:var(--amber-border)}
+    .check-circle{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background 0.2s,border-color 0.2s}
+    .pill-item.checked .check-circle{background:var(--green);border-color:var(--green)}
+    .check-icon{opacity:0;transition:opacity 0.15s}
+    .pill-item.checked .check-icon{opacity:1}
+    .pill-info{flex:1;min-width:0}
+    .pill-name{font-size:15px;font-weight:500;color:var(--text-primary);transition:color 0.15s}
+    .pill-item.checked .pill-name{color:var(--green)}
+    .pill-sub{font-size:12px;color:var(--text-tertiary);margin-top:2px}
+    .pill-item.checked .pill-sub{color:var(--green);opacity:0.6}
+    .stock-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;flex-shrink:0}
+    .stock-badge.ok{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-border)}
+    .stock-badge.low{background:var(--amber-bg);color:var(--amber);border:0.5px solid var(--amber-border)}
+    .stock-badge.out{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-border)}
+    .footer{display:flex;justify-content:center;margin-top:0.5rem}
+    .reset-btn{font-size:12px;color:var(--text-tertiary);background:none;border:none;cursor:pointer;padding:8px 16px;border-radius:20px;-webkit-tap-highlight-color:transparent}
+    .all-done{text-align:center;padding:1.25rem 0 0.5rem;font-size:14px;color:var(--green);font-weight:500;opacity:0;transition:opacity 0.4s}
+    .all-done.visible{opacity:1}
+    /* 体調メモ */
+    .mood-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem}
+    .mood-title{font-size:13px;color:var(--text-secondary);margin-bottom:10px}
+    .mood-row{display:flex;gap:8px;margin-bottom:10px}
+    .mood-btn{flex:1;padding:8px 4px;font-size:18px;background:var(--bg);border:0.5px solid var(--border);border-radius:10px;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background 0.15s,border-color 0.15s;text-align:center}
+    .mood-btn.active{background:var(--green-bg);border-color:var(--green-border)}
+    .memo-input{width:100%;font-size:13px;color:var(--text-primary);background:var(--bg);border:0.5px solid var(--border);border-radius:10px;padding:8px 12px;resize:none;font-family:inherit;line-height:1.5}
+    .memo-input::placeholder{color:var(--text-tertiary)}
+    .memo-save-btn{margin-top:8px;font-size:12px;color:var(--green);background:none;border:none;cursor:pointer;padding:0;font-weight:500}
     /* 履歴 */
-    .history-title {
-      font-size: 26px;
-      font-weight: 700;
-      letter-spacing: -0.5px;
-      margin-bottom: 1.5rem;
-    }
-
-    .streak-card {
-      background: var(--surface);
-      border: 0.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.25rem;
-      margin-bottom: 1.5rem;
-      display: flex;
-      gap: 1rem;
-    }
-
-    .streak-item { flex: 1; text-align: center; }
-
-    .streak-num {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--green);
-      line-height: 1;
-      margin-bottom: 4px;
-    }
-
-    .streak-label { font-size: 11px; color: var(--text-tertiary); }
-
-    .streak-divider {
-      width: 0.5px;
-      background: var(--border);
-      align-self: stretch;
-    }
-
-    .history-empty {
-      text-align: center;
-      color: var(--text-tertiary);
-      font-size: 14px;
-      padding: 3rem 0;
-    }
-
-    .history-day {
-      margin-bottom: 10px;
-      border-radius: var(--radius);
-      border: 0.5px solid var(--border);
-      background: var(--surface);
-      overflow: hidden;
-    }
-
-    .history-day-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
-      gap: 10px;
-    }
-
-    .history-day-header:active { opacity: 0.7; }
-
-    .history-date {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-primary);
-      flex-shrink: 0;
-    }
-
-    .history-bar-wrap {
-      flex: 1;
-      height: 4px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .history-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-    }
-
-    .history-bar-fill.full { background: var(--green); }
-    .history-bar-fill.partial { background: var(--amber); }
-    .history-bar-fill.none { background: var(--red-border); }
-
-    .history-rate {
-      font-size: 12px;
-      font-weight: 600;
-      padding: 3px 10px;
-      border-radius: 20px;
-      flex-shrink: 0;
-    }
-
-    .history-rate.full {
-      background: var(--green-bg);
-      color: var(--green);
-      border: 0.5px solid var(--green-border);
-    }
-
-    .history-rate.partial {
-      background: var(--amber-bg);
-      color: var(--amber);
-      border: 0.5px solid var(--amber-border);
-    }
-
-    .history-rate.none {
-      background: var(--red-bg);
-      color: var(--red);
-      border: 0.5px solid var(--red-border);
-    }
-
-    .history-chevron {
-      font-size: 10px;
-      color: var(--text-tertiary);
-      transition: transform 0.2s;
-      flex-shrink: 0;
-    }
-
-    .history-chevron.open { transform: rotate(180deg); }
-
-    .history-detail {
-      display: none;
-      border-top: 0.5px solid var(--border);
-      padding: 10px 14px 12px;
-    }
-
-    .history-detail.open { display: block; }
-
-    .history-pill-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 0;
-      font-size: 13px;
-    }
-
-    .history-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-
-    .history-dot.ok { background: var(--green); }
-    .history-dot.ng { background: var(--border); }
-
-    .history-pill-name { color: var(--text-primary); }
-    .history-pill-name.ng { color: var(--text-tertiary); }
+    .page-title{font-size:24px;font-weight:700;letter-spacing:-0.5px;margin-bottom:1.25rem}
+    .stats-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem;display:flex;gap:1rem}
+    .stat-item{flex:1;text-align:center}
+    .stat-num{font-size:26px;font-weight:700;color:var(--green);line-height:1;margin-bottom:4px}
+    .stat-label{font-size:11px;color:var(--text-tertiary)}
+    .stat-divider{width:0.5px;background:var(--border);align-self:stretch}
+    /* グラフ */
+    .graph-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1rem}
+    .graph-title{font-size:12px;color:var(--text-secondary);margin-bottom:12px}
+    .graph-bars{display:flex;align-items:flex-end;gap:4px;height:60px}
+    .graph-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+    .graph-bar-wrap{flex:1;width:100%;display:flex;align-items:flex-end}
+    .graph-bar{width:100%;border-radius:3px 3px 0 0;transition:height 0.4s cubic-bezier(0.4,0,0.2,1);min-height:2px}
+    .graph-day-label{font-size:9px;color:var(--text-tertiary)}
+    /* 履歴リスト */
+    .history-empty{text-align:center;color:var(--text-tertiary);font-size:14px;padding:3rem 0}
+    .history-day{margin-bottom:8px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--surface);overflow:hidden}
+    .history-day-header{display:flex;align-items:center;padding:11px 14px;cursor:pointer;-webkit-tap-highlight-color:transparent;gap:10px}
+    .history-day-header:active{opacity:0.7}
+    .history-date{font-size:14px;font-weight:500;color:var(--text-primary);flex-shrink:0}
+    .history-bar-wrap{flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+    .history-bar-fill{height:100%;border-radius:2px}
+    .history-bar-fill.full{background:var(--green)}
+    .history-bar-fill.partial{background:var(--amber)}
+    .history-bar-fill.none{background:var(--red-border)}
+    .history-rate{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;flex-shrink:0}
+    .history-rate.full{background:var(--green-bg);color:var(--green);border:0.5px solid var(--green-border)}
+    .history-rate.partial{background:var(--amber-bg);color:var(--amber);border:0.5px solid var(--amber-border)}
+    .history-rate.none{background:var(--red-bg);color:var(--red);border:0.5px solid var(--red-border)}
+    .history-chevron{font-size:10px;color:var(--text-tertiary);transition:transform 0.2s;flex-shrink:0}
+    .history-chevron.open{transform:rotate(180deg)}
+    .history-detail{display:none;border-top:0.5px solid var(--border);padding:10px 14px 12px}
+    .history-detail.open{display:block}
+    .history-pill-row{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}
+    .history-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .history-dot.ok{background:var(--green)}
+    .history-dot.ng{background:var(--border)}
+    .history-pill-name{color:var(--text-primary)}
+    .history-pill-name.ng{color:var(--text-tertiary)}
+    .history-memo{font-size:12px;color:var(--text-secondary);margin-top:6px;padding-top:6px;border-top:0.5px solid var(--border);font-style:italic}
+    .history-mood{font-size:16px;margin-right:4px}
+    /* 管理 */
+    .manage-section{margin-bottom:1.5rem}
+    .manage-list{display:flex;flex-direction:column;gap:8px}
+    .manage-item{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px 14px}
+    .manage-item-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .manage-name-input{flex:1;font-size:14px;font-weight:500;color:var(--text-primary);background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:6px 10px;font-family:inherit}
+    .manage-row{display:flex;gap:8px;align-items:center}
+    .manage-select{flex:1;font-size:12px;color:var(--text-primary);background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-family:inherit}
+    .manage-dose-input{width:90px;font-size:12px;color:var(--text-primary);background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-family:inherit}
+    .manage-stock-input{width:70px;font-size:12px;color:var(--text-primary);background:var(--bg);border:0.5px solid var(--border);border-radius:8px;padding:5px 8px;font-family:inherit;text-align:center}
+    .manage-label{font-size:11px;color:var(--text-tertiary);flex-shrink:0}
+    .manage-del-btn{width:28px;height:28px;border-radius:50%;background:var(--red-bg);border:0.5px solid var(--red-border);color:var(--red);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+    .add-btn{width:100%;padding:12px;font-size:14px;font-weight:500;color:var(--green);background:var(--green-bg);border:0.5px solid var(--green-border);border-radius:var(--radius);cursor:pointer;-webkit-tap-highlight-color:transparent}
+    .save-btn{width:100%;padding:12px;font-size:14px;font-weight:500;color:#fff;background:var(--green);border:none;border-radius:var(--radius);cursor:pointer;margin-top:8px;-webkit-tap-highlight-color:transparent}
+    .save-toast{position:fixed;bottom:calc(var(--safe-bottom) + 1.5rem);left:50%;transform:translateX(-50%);background:var(--text-primary);color:var(--bg);font-size:13px;padding:8px 20px;border-radius:20px;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+    .save-toast.show{opacity:1}
   </style>
 </head>
 <body>
 <div class="app">
-
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('today')">今日</button>
     <button class="tab-btn" onclick="switchTab('history')">履歴</button>
+    <button class="tab-btn" onclick="switchTab('manage')">管理</button>
   </div>
 
   <!-- 今日 -->
@@ -439,100 +158,124 @@
       <div class="progress-card">
         <div class="progress-row">
           <span class="progress-label">今日の進捗</span>
-          <span class="progress-count" id="progress-text">0 / 9</span>
+          <span class="progress-count" id="progress-text">0 / 0</span>
         </div>
-        <div class="progress-track">
-          <div class="progress-fill" id="progress-fill" style="width:0%"></div>
-        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
       </div>
     </div>
-
-    <div class="section">
-      <p class="section-label">朝</p>
-      <div class="pill-list" id="morning-list"></div>
+    <div class="mood-card">
+      <div class="mood-title">今日の体調</div>
+      <div class="mood-row">
+        <button class="mood-btn" data-mood="5" onclick="selectMood(5)">😊</button>
+        <button class="mood-btn" data-mood="4" onclick="selectMood(4)">🙂</button>
+        <button class="mood-btn" data-mood="3" onclick="selectMood(3)">😐</button>
+        <button class="mood-btn" data-mood="2" onclick="selectMood(2)">😔</button>
+        <button class="mood-btn" data-mood="1" onclick="selectMood(1)">😫</button>
+      </div>
+      <textarea class="memo-input" id="memo-input" rows="2" placeholder="メモ（気になったこと、体の変化など）"></textarea>
+      <button class="memo-save-btn" onclick="saveMemo()">保存</button>
     </div>
-
-    <div class="section">
-      <p class="section-label">夜</p>
-      <div class="pill-list" id="evening-list"></div>
-    </div>
-
+    <div class="section"><p class="section-label">朝</p><div class="pill-list" id="morning-list"></div></div>
+    <div class="section"><p class="section-label">夜</p><div class="pill-list" id="evening-list"></div></div>
     <div class="all-done" id="all-done">✓ 今日のサプリ、すべて完了！</div>
-
-    <div class="footer">
-      <button class="reset-btn" onclick="resetToday()">今日のチェックをリセット</button>
-    </div>
+    <div class="footer"><button class="reset-btn" onclick="resetToday()">今日のチェックをリセット</button></div>
   </div>
 
   <!-- 履歴 -->
   <div class="page" id="page-history">
-    <h2 class="history-title">履歴</h2>
-    <div class="streak-card">
-      <div class="streak-item">
-        <div class="streak-num" id="streak-num">0</div>
-        <div class="streak-label">連続達成日数</div>
-      </div>
-      <div class="streak-divider"></div>
-      <div class="streak-item">
-        <div class="streak-num" id="avg-num">—</div>
-        <div class="streak-label">直近7日の平均</div>
-      </div>
+    <h2 class="page-title">履歴</h2>
+    <div class="stats-card">
+      <div class="stat-item"><div class="stat-num" id="streak-num">0</div><div class="stat-label">連続達成日数</div></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><div class="stat-num" id="avg-num">—</div><div class="stat-label">直近7日の平均</div></div>
+    </div>
+    <div class="graph-card">
+      <div class="graph-title">直近14日の達成率</div>
+      <div class="graph-bars" id="graph-bars"></div>
     </div>
     <div id="history-list"></div>
   </div>
 
+  <!-- 管理 -->
+  <div class="page" id="page-manage">
+    <h2 class="page-title">サプリ管理</h2>
+    <div class="manage-list" id="manage-list"></div>
+    <button class="add-btn" onclick="addSupp()" style="margin-top:8px">＋ サプリを追加</button>
+    <button class="save-btn" onclick="saveSupps()">変更を保存</button>
+  </div>
 </div>
+
+<div class="save-toast" id="save-toast">保存しました</div>
+
 <script>
-const SUPPLEMENTS = [
-  { id: "lcarnitine", name: "L-カルニチン",            dose: "500mg", timing: "morning" },
-  { id: "citicoline",  name: "シチコリン",               dose: "300mg", timing: "morning" },
-  { id: "epa",         name: "EPA",                     dose: "360mg", timing: "morning" },
-  { id: "dha",         name: "DHA",                     dose: "154mg", timing: "morning" },
-  { id: "natto",       name: "ナットウキナーゼ・ビタミンE", dose: "",      timing: "morning" },
-  { id: "rhodiola",    name: "ロディオラ",               dose: "500mg", timing: "morning" },
-  { id: "ps",          name: "ホスファチジルセリン",     dose: "",      timing: "morning" },
-  { id: "nmn",         name: "NMN",                     dose: "233mg", timing: "evening" },
-  { id: "camagzincd",  name: "Ca・Mg・亜鉛・ビタミンD",  dose: "",      timing: "evening" },
+const DAYS = ["日","月","火","水","木","金","土"];
+const DEFAULT_SUPPS = [
+  {id:"lcarnitine",name:"L-カルニチン",dose:"500mg",timing:"morning",stock:null},
+  {id:"citicoline", name:"シチコリン",  dose:"300mg",timing:"morning",stock:null},
+  {id:"epa",        name:"EPA",         dose:"360mg",timing:"morning",stock:null},
+  {id:"dha",        name:"DHA",         dose:"154mg",timing:"morning",stock:null},
+  {id:"natto",      name:"ナットウキナーゼ・ビタミンE",dose:"",timing:"morning",stock:null},
+  {id:"rhodiola",   name:"ロディオラ",  dose:"500mg",timing:"morning",stock:null},
+  {id:"ps",         name:"ホスファチジルセリン",dose:"",timing:"morning",stock:null},
+  {id:"nmn",        name:"NMN",         dose:"233mg",timing:"evening",stock:null},
+  {id:"camagzincd", name:"Ca・Mg・亜鉛・ビタミンD",dose:"",timing:"evening",stock:null},
 ];
 
-const TOTAL = SUPPLEMENTS.length;
-const DAYS = ["日","月","火","水","木","金","土"];
+function loadSupps() {
+  try { const s = JSON.parse(localStorage.getItem("supps_config")); return s && s.length ? s : DEFAULT_SUPPS; } catch(e) { return DEFAULT_SUPPS; }
+}
+function saveSuppsConfig(arr) { localStorage.setItem("supps_config", JSON.stringify(arr)); }
 
 function dateKey(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,"0");
-  const dd = String(d.getDate()).padStart(2,"0");
-  return "supp_" + y + "-" + m + "-" + dd;
+  return "supp_" + d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
 }
-
 function todayKey() { return dateKey(new Date()); }
-
-function loadState(key) {
-  try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch(e) { return {}; }
-}
-
+function loadState(key) { try { return JSON.parse(localStorage.getItem(key) || "{}"); } catch(e) { return {}; } }
 function saveState(s) { localStorage.setItem(todayKey(), JSON.stringify(s)); }
 
-function doneCount(state) {
-  return SUPPLEMENTS.filter(s => state[s.id]).length;
+function doneCount(state, supps) {
+  return supps.filter(s => state[s.id]).length;
 }
 
+function getStockClass(stock) {
+  if (stock === null || stock === "") return null;
+  const n = parseInt(stock);
+  if (isNaN(n)) return null;
+  if (n <= 0) return "out";
+  if (n <= 7) return "low";
+  return "ok";
+}
+
+function getStockLabel(stock) {
+  if (stock === null || stock === "") return null;
+  const n = parseInt(stock);
+  if (isNaN(n)) return null;
+  if (n <= 0) return "在庫切れ";
+  return n + "日分";
+}
+
+/* 今日 */
 function updateProgress() {
+  const supps = loadSupps();
   const state = loadState(todayKey());
-  const done = doneCount(state);
-  document.getElementById("progress-text").textContent = done + " / " + TOTAL;
-  document.getElementById("progress-fill").style.width = Math.round(done / TOTAL * 100) + "%";
-  document.getElementById("all-done").classList.toggle("visible", done === TOTAL);
+  const done = doneCount(state, supps);
+  const total = supps.length;
+  document.getElementById("progress-text").textContent = done + " / " + total;
+  document.getElementById("progress-fill").style.width = total > 0 ? Math.round(done/total*100) + "%" : "0%";
+  document.getElementById("all-done").classList.toggle("visible", done === total && total > 0);
 }
 
 function renderList(timing, containerId) {
+  const supps = loadSupps();
   const state = loadState(todayKey());
   const container = document.getElementById(containerId);
   container.innerHTML = "";
-  SUPPLEMENTS.filter(s => s.timing === timing).forEach(s => {
+  supps.filter(s => s.timing === timing).forEach(s => {
     const checked = !!state[s.id];
+    const sc = getStockClass(s.stock);
+    const sl = getStockLabel(s.stock);
     const item = document.createElement("div");
-    item.className = "pill-item" + (checked ? " checked" : "");
+    item.className = "pill-item" + (checked ? " checked" : "") + (sc === "low" || sc === "out" ? " low-stock" : "");
     item.innerHTML = `
       <div class="check-circle">
         <svg class="check-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -541,8 +284,9 @@ function renderList(timing, containerId) {
       </div>
       <div class="pill-info">
         <div class="pill-name">${s.name}</div>
-        ${s.dose ? `<div class="pill-dose">${s.dose}</div>` : ""}
+        ${s.dose ? `<div class="pill-sub">${s.dose}</div>` : ""}
       </div>
+      ${sl ? `<span class="stock-badge ${sc}">${sl}</span>` : ""}
     `;
     item.addEventListener("click", () => {
       const st = loadState(todayKey());
@@ -554,19 +298,80 @@ function renderList(timing, containerId) {
   });
 }
 
+function selectMood(val) {
+  const state = loadState(todayKey());
+  state._mood = val;
+  saveState(state);
+  document.querySelectorAll(".mood-btn").forEach(b => {
+    b.classList.toggle("active", parseInt(b.dataset.mood) === val);
+  });
+}
+
+function saveMemo() {
+  const state = loadState(todayKey());
+  state._memo = document.getElementById("memo-input").value;
+  saveState(state);
+  showToast("メモを保存しました");
+}
+
 function renderToday() {
-  renderList("morning", "morning-list");
-  renderList("evening", "evening-list");
+  renderList("morning","morning-list");
+  renderList("evening","evening-list");
   updateProgress();
+  const state = loadState(todayKey());
+  if (state._mood) {
+    document.querySelectorAll(".mood-btn").forEach(b => b.classList.toggle("active", parseInt(b.dataset.mood) === state._mood));
+  }
+  if (state._memo) document.getElementById("memo-input").value = state._memo;
 }
 
 function resetToday() {
-  if (confirm("今日のチェックをリセットしますか？")) {
+  if (confirm("今日のチェックをリセットしますか？（体調メモは残ります）")) {
+    const state = loadState(todayKey());
+    const mood = state._mood; const memo = state._memo;
     localStorage.removeItem(todayKey());
+    if (mood || memo) { const ns = {}; if(mood) ns._mood=mood; if(memo) ns._memo=memo; saveState(ns); }
     renderToday();
   }
 }
 
+/* グラフ */
+function renderGraph() {
+  const supps = loadSupps();
+  const container = document.getElementById("graph-bars");
+  container.innerHTML = "";
+  const today = new Date();
+  const bars = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const k = dateKey(d);
+    const state = loadState(k);
+    const total = supps.length;
+    const done = doneCount(state, supps);
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
+    const hasData = Object.keys(state).filter(k => !k.startsWith("_")).length > 0;
+    bars.push({ d, pct, hasData });
+  }
+  bars.forEach(b => {
+    const col = document.createElement("div");
+    col.className = "graph-col";
+    const barWrap = document.createElement("div");
+    barWrap.className = "graph-bar-wrap";
+    const bar = document.createElement("div");
+    bar.className = "graph-bar";
+    const color = b.pct === 100 ? "var(--green)" : b.pct > 0 ? "var(--amber)" : b.hasData ? "var(--red-border)" : "var(--border)";
+    bar.style.cssText = `height:${Math.max(b.pct, b.hasData ? 4 : 2)}%;background:${color}`;
+    barWrap.appendChild(bar);
+    const label = document.createElement("div");
+    label.className = "graph-day-label";
+    label.textContent = (b.d.getMonth()+1) + "/" + b.d.getDate();
+    col.appendChild(barWrap);
+    col.appendChild(label);
+    container.appendChild(col);
+  });
+}
+
+/* 履歴 */
 function getAllHistoryKeys() {
   const keys = [];
   for (let i = 0; i < localStorage.length; i++) {
@@ -577,95 +382,89 @@ function getAllHistoryKeys() {
 }
 
 function formatDateLabel(key) {
-  const parts = key.replace("supp_", "").split("-");
+  const parts = key.replace("supp_","").split("-");
   const d = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]));
   return (d.getMonth()+1) + "/" + d.getDate() + "（" + DAYS[d.getDay()] + "）";
 }
 
-function calcStreak(keys) {
-  let streak = 0;
+function calcStreak() {
+  const supps = loadSupps();
   const today = new Date();
+  let streak = 0;
   for (let i = 0; i < 365; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const k = dateKey(d);
-    const state = loadState(k);
-    if (doneCount(state) === TOTAL) {
-      streak++;
-    } else if (i > 0) {
-      break;
-    }
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const state = loadState(dateKey(d));
+    if (doneCount(state, supps) === supps.length && supps.length > 0) streak++;
+    else if (i > 0) break;
   }
   return streak;
 }
 
 function calcAvg7() {
+  const supps = loadSupps();
   const today = new Date();
   let total = 0, days = 0;
   for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const k = dateKey(d);
-    const state = loadState(k);
-    if (Object.keys(state).length > 0) {
-      total += Math.round(doneCount(state) / TOTAL * 100);
-      days++;
-    }
+    const d = new Date(today); d.setDate(today.getDate() - i);
+    const state = loadState(dateKey(d));
+    const dataKeys = Object.keys(state).filter(k => !k.startsWith("_"));
+    if (dataKeys.length > 0) { total += Math.round(doneCount(state, supps)/supps.length*100); days++; }
   }
-  return days > 0 ? Math.round(total / days) + "%" : "—";
+  return days > 0 ? Math.round(total/days) + "%" : "—";
 }
 
-function renderHistory() {
-  const keys = getAllHistoryKeys();
-  document.getElementById("streak-num").textContent = calcStreak(keys);
-  document.getElementById("avg-num").textContent = calcAvg7();
+const MOOD_EMOJI = {1:"😫",2:"😔",3:"😐",4:"🙂",5:"😊"};
 
+function renderHistory() {
+  const supps = loadSupps();
+  document.getElementById("streak-num").textContent = calcStreak();
+  document.getElementById("avg-num").textContent = calcAvg7();
+  renderGraph();
+
+  const keys = getAllHistoryKeys();
   const container = document.getElementById("history-list");
   container.innerHTML = "";
 
-  if (!keys.length) {
-    container.innerHTML = `<div class="history-empty">まだ記録がありません</div>`;
-    return;
-  }
+  if (!keys.length) { container.innerHTML = `<div class="history-empty">まだ記録がありません</div>`; return; }
 
   keys.forEach(key => {
     const state = loadState(key);
-    const done = doneCount(state);
-    const pct = Math.round(done / TOTAL * 100);
+    const done = doneCount(state, supps);
+    const total = supps.length;
+    const pct = total > 0 ? Math.round(done/total*100) : 0;
     const cls = pct === 100 ? "full" : pct > 0 ? "partial" : "none";
-    const label = pct === 100 ? "完全達成" : pct > 0 ? done + "/" + TOTAL : "未記録";
+    const label = pct === 100 ? "完全達成" : pct > 0 ? done+"/"+total : "未記録";
+    const mood = state._mood ? MOOD_EMOJI[state._mood] : null;
+    const memo = state._memo || null;
 
     const day = document.createElement("div");
     day.className = "history-day";
-
     const chevId = "chev-" + key;
-    const detailId = "detail-" + key;
 
     const header = document.createElement("div");
     header.className = "history-day-header";
     header.innerHTML = `
-      <span class="history-date">${formatDateLabel(key)}</span>
-      <div class="history-bar-wrap">
-        <div class="history-bar-fill ${cls}" style="width:${pct}%"></div>
-      </div>
+      <span class="history-date">${formatDateLabel(key)}${mood ? " " + mood : ""}</span>
+      <div class="history-bar-wrap"><div class="history-bar-fill ${cls}" style="width:${pct}%"></div></div>
       <span class="history-rate ${cls}">${label}</span>
       <span class="history-chevron" id="${chevId}">▼</span>
     `;
 
     const detail = document.createElement("div");
     detail.className = "history-detail";
-    detail.id = detailId;
-
-    SUPPLEMENTS.forEach(s => {
+    supps.forEach(s => {
       const ok = !!state[s.id];
       const row = document.createElement("div");
       row.className = "history-pill-row";
-      row.innerHTML = `
-        <div class="history-dot ${ok ? "ok" : "ng"}"></div>
-        <span class="history-pill-name ${ok ? "" : "ng"}">${s.name}${s.dose ? " " + s.dose : ""}</span>
-      `;
+      row.innerHTML = `<div class="history-dot ${ok?"ok":"ng"}"></div><span class="history-pill-name ${ok?"":"ng"}">${s.name}${s.dose?" "+s.dose:""}</span>`;
       detail.appendChild(row);
     });
+    if (memo) {
+      const memoEl = document.createElement("div");
+      memoEl.className = "history-memo";
+      memoEl.textContent = memo;
+      detail.appendChild(memoEl);
+    }
 
     header.addEventListener("click", () => {
       const isOpen = detail.classList.contains("open");
@@ -680,24 +479,82 @@ function renderHistory() {
   });
 }
 
-function switchTab(tab) {
-  document.querySelectorAll(".tab-btn").forEach((b, i) => {
-    b.classList.toggle("active", (i === 0 && tab === "today") || (i === 1 && tab === "history"));
+/* 管理 */
+let editSupps = [];
+
+function renderManage() {
+  editSupps = JSON.parse(JSON.stringify(loadSupps()));
+  const container = document.getElementById("manage-list");
+  container.innerHTML = "";
+  editSupps.forEach((s, i) => {
+    const item = document.createElement("div");
+    item.className = "manage-item";
+    item.innerHTML = `
+      <div class="manage-item-top">
+        <input class="manage-name-input" type="text" value="${s.name}" placeholder="サプリ名" oninput="editSupps[${i}].name=this.value">
+        <button class="manage-del-btn" onclick="deleteSupp(${i})">×</button>
+      </div>
+      <div class="manage-row">
+        <span class="manage-label">服用</span>
+        <select class="manage-select" onchange="editSupps[${i}].timing=this.value">
+          <option value="morning" ${s.timing==="morning"?"selected":""}>朝</option>
+          <option value="evening" ${s.timing==="evening"?"selected":""}>夜</option>
+        </select>
+        <span class="manage-label">容量</span>
+        <input class="manage-dose-input" type="text" value="${s.dose}" placeholder="300mg等" oninput="editSupps[${i}].dose=this.value">
+      </div>
+      <div class="manage-row" style="margin-top:6px">
+        <span class="manage-label">在庫</span>
+        <input class="manage-stock-input" type="number" min="0" value="${s.stock !== null ? s.stock : ""}" placeholder="日数" oninput="editSupps[${i}].stock=this.value===''?null:parseInt(this.value)">
+        <span class="manage-label">日分（空白=未設定）</span>
+      </div>
+    `;
+    container.appendChild(item);
   });
-  document.getElementById("page-today").classList.toggle("active", tab === "today");
-  document.getElementById("page-history").classList.toggle("active", tab === "history");
-  if (tab === "history") renderHistory();
 }
 
-const d = new Date();
-document.getElementById("today-label").textContent =
-  (d.getMonth()+1) + "/" + d.getDate() + "（" + DAYS[d.getDay()] + "）";
+function deleteSupp(i) {
+  if (confirm(editSupps[i].name + " を削除しますか？")) {
+    editSupps.splice(i, 1);
+    renderManage();
+  }
+}
 
+function addSupp() {
+  editSupps.push({ id: "supp_" + Date.now(), name: "", dose: "", timing: "morning", stock: null });
+  renderManage();
+  document.getElementById("manage-list").lastElementChild.querySelector("input").focus();
+}
+
+function saveSupps() {
+  const valid = editSupps.filter(s => s.name.trim());
+  saveSuppsConfig(valid);
+  renderToday();
+  showToast("変更を保存しました");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("save-toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2000);
+}
+
+/* タブ切替 */
+const TABS = ["today","history","manage"];
+function switchTab(tab) {
+  document.querySelectorAll(".tab-btn").forEach((b,i) => b.classList.toggle("active", TABS[i] === tab));
+  TABS.forEach(t => document.getElementById("page-"+t).classList.toggle("active", t === tab));
+  if (tab === "history") renderHistory();
+  if (tab === "manage") renderManage();
+}
+
+/* 初期化 */
+const d = new Date();
+document.getElementById("today-label").textContent = (d.getMonth()+1) + "/" + d.getDate() + "（" + DAYS[d.getDay()] + "）";
 renderToday();
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("service-worker.js");
-}
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js");
 </script>
 </body>
 </html>
